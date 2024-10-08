@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
-public class DoorFeatures : CoreFeatures // Inherits the CoreFeatures script
+public class DoorFeatures : CoreFeatures // Inheritance - inherits the CoreFeatures script
 {
     [Header("Door Configuration")]
 
     [SerializeField]
-    private Transform doorPivot; // Controls door pivoting
+    private Transform doorPivot; // Controls door pivoting -- Encapsulation
 
     [SerializeField]
     private float maxAngle = 90.0f;
@@ -17,7 +17,7 @@ public class DoorFeatures : CoreFeatures // Inherits the CoreFeatures script
     private bool reverseAngleDirection = false;
 
     [SerializeField]
-    private float doorSpeed = 1.5f;
+    private float doorSpeed = 1.0f;
 
     [SerializeField]
     private bool open = false;
@@ -31,11 +31,11 @@ public class DoorFeatures : CoreFeatures // Inherits the CoreFeatures script
     private XRSocketInteractor socketInteractor;
 
     [SerializeField]
-    XRSimpleInteractable simpleInteractable;
+    private XRSimpleInteractable simpleInteractable;
 
     private void Start()
     {
-        socketInteractor?.selectEntered.AddListener((s) =>
+        socketInteractor?.selectEntered.AddListener((s) => // Polymorphic
         {
             OpenDoor();
             PlayOnStart();
@@ -45,11 +45,14 @@ public class DoorFeatures : CoreFeatures // Inherits the CoreFeatures script
         {
             OpenDoor();
         });
+
+        // For Dev Testing Only!!! -- DELETE ME
+        //OpenDoor();
     }
 
-    public void OpenDoor()
+    public void OpenDoor() // Abstraction
     {
-        if (open)
+        if (!open)
         {
             PlayOnStart();
             open = true;
