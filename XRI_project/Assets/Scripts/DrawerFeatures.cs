@@ -25,8 +25,30 @@ public class DrawerFeatures : CoreFeatures
     [SerializeField]
     private XRSimpleInteractable simpleInteractable;
 
-    private void Start()
+    private Vector3 initialPosition; //Store initial position of our drawer
+
+    //Restrict drawer position using clamps
+    private float drawerMinLimit;
+    private float drawerMaxLimit;
+
+    void Start()
     {
+        //Save the initial position of drawer at start
+        initialPosition = drawerSlide.localPosition;
+
+        //Find the drawer min and max limits based on initialPosition and maxDistance
+        if (featureDirection == FeatureDirection.Forward)
+        {
+            drawerMinLimit = initialPosition.z;
+            drawerMaxLimit = initialPosition.z + maxDistance;
+        }
+
+        else
+        {
+            drawerMinLimit = initialPosition.z - maxDistance;
+            drawerMaxLimit = initialPosition.z;
+        }
+
         //drawer with simple interactable
         simpleInteractable?.selectEntered.AddListener((s) =>
         {
@@ -42,27 +64,31 @@ public class DrawerFeatures : CoreFeatures
     {
         open = true;
         PlayOnStart();
+        StopAllCoroutines();
         StartCoroutine(ProcessMotion());
+    }
+
+    private void CloseDrawer()
+    {
+        open = false;
+        PlayOnEnd();
+        StopAllCoroutines();
+        StartCoroutine (ProcessMotion());
     }
 
     private IEnumerator ProcessMotion()
     {
-        while (open)
+        //Open drawer to maxDistance or close initialPosition based on "open" bool
+        Vector3 targetPosition = open ? new Vector3(drawerSlide.localPosition.x, drawerSlide.localPosition.y, drawerMaxLimit) : initialPosition;
+
+        while (drawerSlide.localPosition != targetPosition)
         {
-            if (featureDirection == FeatureDirection.Forward && drawerSlide.localPosition.z <= maxDistance)
-            {
-                drawerSlide.Translate(Vector3.forward * Time.deltaTime * speed);
-            }
+            drawerSlide.localPosition = Vector3.MoveTowards(drawerSlide.localPosition, targetPosition, Time.deltaTime * speed);
 
-            else if (featureDirection == FeatureDirection.Backward && drawerSlide.localPosition.z >= maxDistance)
-            {
-                drawerSlide.Translate(-Vector3.forward * Time.deltaTime * speed);
-            }
+            //Ensure drawer stays within defined limits
+            float clampedZ = Mathf.Clamp(drawerSlide.localPosition.z, drawerMinLimit, drawerMaxLimit);
 
-            else
-            {
-                open = false; //loop ends if no conditions are met
-            }
+            drawerSlide.localPosition = new Vector3(drawerSlide.localPosition.x, drawerSlide.localPosition.y, clampedZ);
 
             yield return null;
         }
